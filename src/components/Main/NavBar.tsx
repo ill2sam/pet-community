@@ -1,8 +1,17 @@
+// import { useEffect } from "react";
 import { Link } from "react-router-dom"
+import  StoreData  from "../../redux/StoreData"
 
 export default function Navbar() {
+  // redux store 로그인시 userId 저장 후 그 값을 로드
+  // const userId = useSelector((store: RootState) => store.loginState.userId)
+  // const email = useSelector((store: RootState) => store.loginState.email)
+  const name = StoreData().name
+  const isLogin = StoreData().isLogin
+
+
   return (
-    <div className="navbar bg-base-100 max-w-7xl mx-auto">
+    <nav className="navbar bg-base-100 max-w-5xl mx-auto">
       <div className="dropdown">
         <label tabIndex={0} className="btn btn-ghost md:hidden xl:mx-auto">
           <svg
@@ -32,7 +41,9 @@ export default function Navbar() {
         </ul>
       </div>
       <div className="flex-1">
-        <Link className="btn btn-ghost normal-case text-xl" to="/">Logo</Link>
+        <Link className="btn btn-ghost normal-case text-xl" to="/">
+          PetComm
+        </Link>
         <ul className="menu menu-horizontal px-1 hidden md:inline-flex">
           <li>
             <a>정보공유</a>
@@ -44,24 +55,40 @@ export default function Navbar() {
       </div>
       <div className="flex-none">
         <ul className="menu menu-horizontal px-1">
-          <li className=" mr-4">
-            <Link to="/login">로그인</Link>
-          </li>
+          {isLogin === false && (
+            <li className="mr-2">
+              <Link to="/login">로그인</Link>
+            </li>
+          )}
+          {isLogin === true && (
+            <>
+              <div className="sm:text-xs sm:hidden md:flex justify-center items-center mr-2">
+                <span>안녕하세요 {name}님</span>
+              </div>
+              <li className=" mr-2">
+                <Link to="/profile">마이페이지</Link>
+              </li>
+            </>
+          )}
           <li>
             <details>
-              <summary className="bg-amber-500/80 hover:bg-amber-400">글쓰기</summary>
-              <ul className="p-2 bg-base-100">
+              <summary className="bg-amber-500/80 hover:bg-amber-400">
+                글쓰기
+              </summary>
+              <ul className="p-2 bg-base-100 z-[5]">
                 <li>
-                  <a>정보공유</a>
+                  {isLogin === false && <Link to="/login">정보공유</Link>}
+                  {isLogin === true && <Link to="">정보공유</Link>}
                 </li>
                 <li>
-                  <a>질문답변</a>
+                  {isLogin === false && <Link to="/login">질문답변</Link>}
+                  {isLogin === true && <Link to="">질문답변</Link>}
                 </li>
               </ul>
             </details>
           </li>
         </ul>
       </div>
-    </div>
+    </nav>
   )
 }

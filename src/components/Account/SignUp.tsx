@@ -1,17 +1,15 @@
 import { useState} from "react"
 import { useNavigate } from "react-router-dom"
-import { app, db } from "../../firebaseConfig"
+import { auth,  db } from "../../firebaseConfig"
 import {
-  getAuth,
   createUserWithEmailAndPassword,
+  fetchSignInMethodsForEmail,
   updateProfile,
 } from "firebase/auth"
 import { collection, query, getDocs, doc, setDoc } from "firebase/firestore"
 
 export default function SignUp() {
-  const auth = getAuth(app)
   const dbQuery = query(collection(db, "Users"))
-
   const navigate = useNavigate();
 
   const [email, SetEmail] = useState<string>("")
@@ -39,22 +37,40 @@ export default function SignUp() {
     setIsEmailAvailable(null)
   }
 
+  // const handleEmailCheck = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  //   e.preventDefault()
+
+  //   const emailSnap = await getDocs(dbQuery)
+  //   const emailArr = emailSnap.docs.map((doc) => doc.id)
+  //   console.log(emailArr)
+    
+  //   try {
+  //     const emailFilter = emailArr.filter((doc) => doc === email)
+  //     if (emailFilter.length === 0 && emailMatch !== null && email !== "") {
+  //       setIsEmailAvailable(true)
+  //     } else {
+  //       setIsEmailAvailable(false)
+  //     }
+  //   } catch (error:any) {
+  //       console.log(error.code)
+  //       console.log(error.message)
+  //     console.error("이메일 중복 체크 에러: ", error)
+  //   }
+  // }
   const handleEmailCheck = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
 
-    const emailSnap = await getDocs(dbQuery)
-    const emailArr = emailSnap.docs.map((doc) => doc.id)
     try {
-      const emailFilter = emailArr.filter((doc) => doc === email)
-      if (emailFilter.length === 0 && emailMatch !== null && email !== "") {
+      const providers = await fetchSignInMethodsForEmail(auth, email)
+      console.log(providers)
+      if (providers.length === 0 && emailMatch !== null && email !== "") {
         setIsEmailAvailable(true)
       } else {
         setIsEmailAvailable(false)
       }
-    } catch (error) {
-      // if (error.code === "auth/invalid-email") {
-      //   console.log(isEmailAvailable)
-      // }
+    } catch (error:any) {
+        console.log(error.code)
+        console.log(error.message)
       console.error("이메일 중복 체크 에러: ", error)
     }
   }
@@ -70,6 +86,7 @@ export default function SignUp() {
     e.preventDefault()
     const nicknameSnap = await getDocs(dbQuery)
     const nicknameArr = nicknameSnap.docs.map((doc) => doc.data().nickname)
+    console.log(nicknameArr)
 
     try {
       const nicknameFilter = nicknameArr.filter((doc) => doc === nickname)
@@ -135,7 +152,7 @@ export default function SignUp() {
         await updateProfile(user, {
           displayName: nickname,
         }).catch((err) => console.log(err))
-
+        // 파이어스토어에 저장
         await setDoc(doc(db, "Users", email), {
           email: email,
           nickname : nickname,
@@ -152,8 +169,8 @@ export default function SignUp() {
   }
 
   return (
-    <div className="flex justify-center max-w-7xl mx-auto mt-20">
-      <div className="card flex-shrink-0 w-full max-w-sm shadow-xl bg-base-100">
+    <div className="flex justify-center max-w-7xl mx-auto mt-20 min-h-[calc(100vh-150px)]">
+      <div className="card flex-shrink-0 h-max w-full max-w-sm shadow-xl bg-base-100">
         <div className="card-body">
           <h2 className="font-bold mb-4">이메일로 회원가입</h2>
           <form onSubmit={handleSubmit}>
@@ -210,6 +227,7 @@ export default function SignUp() {
                 />
                 <button
                   className="bg-gray-100 rounded-2xl text-xs p-2"
+                  type="button"
                   onClick={handleNicknameCheck}
                 >
                   중복체크
