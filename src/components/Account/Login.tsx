@@ -1,17 +1,25 @@
-import { useState, useReducer } from "react"
+import { useState, useEffect} from "react"
 import { Link ,useNavigate } from "react-router-dom"
-import { app } from "../../firebaseConfig"
-import { getAuth, GoogleAuthProvider, signInWithPopup ,signInWithEmailAndPassword } from "firebase/auth"
-
-
+import { auth, db } from "../../firebaseConfig"
+import { getAuth, GoogleAuthProvider, signInWithPopup ,signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "firebase/auth"
+import { doc, setDoc } from "firebase/firestore"
+import { useDispatch} from "react-redux"
+import { login } from "../../redux/loginSlice"
+import StoreData from "../../redux/StoreData"
 
 export default function Login () {
-  const auth = getAuth(app)
+  // const auth = getAuth(app)
+  const isLogin = StoreData().isLogin
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    isLogin ? navigate("/") : {};
+  })
 
   const [email, SetEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [userData, setUserData] = useState("")
+  // const [userData, setUserData] = useState("")
   const [checkLoginForm, setCheckLoginForm] =useState<boolean | null>(null)
 
   const handleEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,61 +31,83 @@ export default function Login () {
 
   const submitLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    await setPersistence(auth, browserSessionPersistence).then(() => {
+      signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      )
+        .then((userCredential) => {
+          if (userCredential.operationType === "signIn") {
+            const user = userCredential.user
+            const userInfo = {
+              userId: user.uid,
+              name: user.displayName,
+              email: user.email,
+              isLogin: true,
+            }
+            dispatch(login(userInfo))
+            SetEmail("")
+            setPassword("")
+            navigate("/")
+          } 
+        })
+        .catch((error) => {
+          const errorCode = error.code
+          if (
+            errorCode === "auth/user-not-found" ||
+            errorCode === "auth/wrong-password" ||
+            errorCode === "auth/invalid-email"
+          ) {
+            setCheckLoginForm(false)
+          }
+        })
+    })
+  }
 
-    await signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    )
-      .then((userCredential) => {
-        const user = userCredential.user
-        console.log(user.uid)
-        console.log(userCredential.operationType)
-        console.log(user, "로그인 성공")
+  const handleGoogleLogin = (e:React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider).then( async (result) => {
+      // const credential = GoogleAuthProvider.credentialFromResult(result);
+      // const token = credential?.accessToken;
+      if (result.operationType === "signIn") {
+        const user = result.user
+        const userInfo = {
+          userId: user.uid,
+          name: user.displayName,
+          email: user.email,
+          isLogin: true,
+        }
+        // await setDoc(doc(db, "Users", email), {
+        //   email: user.email,
+        //   name: user.displayName,
+        // })
+        dispatch(login(userInfo))
         SetEmail("")
         setPassword("")
         navigate("/")
-      })
-      .catch((error) => {
-        const errorCode = error.code
-        if (
-          errorCode === "auth/user-not-found" ||
-          errorCode === "auth/wrong-password" ||
-          errorCode === "auth/invalid-email"
-        ) {
-          setCheckLoginForm(false)
-        }
-      })
-  }
-
-  const handleGoogleLogin = () => {
-    const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider).then((result) => {
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const token = credential?.accessToken;
-      const user = result.user
-      console.log(result.operationType)
-
+      } 
     }).catch((error) => {
-      // const errorCode = error.code;
-      // const errorMessage = error.message;
+      const errorCode = error.code;
+      const errorMessage = error.message;
 
       const credentialError = GoogleAuthProvider.credentialFromError(error)
-      console.log(credentialError)
+      console.log(errorCode)
+      console.log(errorMessage)
     })
     
   }
 
   return (
-    <div className="flex justify-center max-w-7xl mx-auto mt-20">
-      <div className="card flex-shrink-0 w-full max-w-sm shadow-xl bg-base-100">
+    <div className="flex justify-center max-w-5xl mx-auto mt-24 md:mt-20 min-h-[calc(100vh-150px)]">
+      <div className="card flex-shrink-0 h-max w-full max-w-sm shadow-xl bg-base-100">
         <div className="card-body">
           <h2 className="font-bold mb-4">이메일로 로그인</h2>
           <form onSubmit={submitLogin}>
             <div className="form-control">
-              <label className="label" htmlFor="loginId">
-                {/* <span className="label-text">이메일</span> */}
-              </label>
+              <label className="label" htmlFor="loginId"></label>
               <input
                 type="email"
                 id="loginId"
@@ -88,9 +118,7 @@ export default function Login () {
               />
             </div>
             <div className="form-control">
-              <label className="label" htmlFor="loginPassword">
-                {/* <span className="label-text">비밀번호</span> */}
-              </label>
+              <label className="label" htmlFor="loginPassword"></label>
               <input
                 type="password"
                 id="loginPassword"
