@@ -1,62 +1,71 @@
-import { useState} from "react"
+import { useState, useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { auth,  db } from "../../firebaseConfig"
+import { auth, db } from "../../firebaseConfig"
 import {
   createUserWithEmailAndPassword,
   fetchSignInMethodsForEmail,
   updateProfile,
 } from "firebase/auth"
-import { collection, query, getDocs, doc, setDoc } from "firebase/firestore"
+import { reset } from "../../redux/loginSlice"
+import { useDispatch } from "react-redux"
+import { signOut } from "firebase/auth"
+import { doc, setDoc } from "firebase/firestore"
+import InfoCheckHooks from "./InfoCheckHooks"
+import PasswordCheck from "./PasswordCheck"
 
 export default function SignUp() {
-  const dbQuery = query(collection(db, "Users"))
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const [email, SetEmail] = useState<string>("")
-  const [nickname, setNickname] = useState<string>("")
   const [isEmailAvailable, setIsEmailAvailable] = useState<boolean | null>(null)
-  const [isNicknameAvailable, setIsNicknameAvailable] = useState<
-    boolean | null
-  >(null)
-  const [password, setPassword] = useState("")
-  const [passwordRules, setPasswordRules] = useState(false)
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [passwordMatch, setPasswordMatch] = useState(false)
 
   const emailRegExp = /^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.]+/g
   const emailMatch = email.match(emailRegExp)
-  const nicknameRegExp = /^([a-zA-Z가-힣0-9]){2,12}$/g
-  const nicknameMatch = nickname.match(nicknameRegExp)
+  const [emailCheckAvailable, setEmailCheckAvailable] = useState<boolean>(true)
+
+  // const [password, setPassword] = useState("")
+  // const [passwordRules, setPasswordRules] = useState(false)
+  // const [confirmPassword, setConfirmPassword] = useState("")
+  // const [passwordMatch, setPasswordMatch] = useState(false)
+  const {
+    password,
+    passwordRules,
+    confirmPassword,
+    passwordMatch,
+    handlePasswordChange,
+    handleConfirmPasswordChange,
+  } = PasswordCheck()
+
+  const {
+    nickname,
+    nicknameMatch,
+    isNicknameAvailable,
+    nicknameCheckButton,
+    handleNicknameChange,
+    handleNicknameCheck,
+  } = InfoCheckHooks({
+    initialNickname: "",
+    initialNicknameAvailable: null,
+  })
 
   const [submitAvailable, setSubmitAvailable] = useState<boolean>(true)
 
-
+  const emailAvailableCheck = useCallback(() => {
+    if (emailMatch !== null && isEmailAvailable !== false) {
+      setEmailCheckAvailable(false)
+    } else {
+      setEmailCheckAvailable(true)
+    }
+  }, [emailMatch, isEmailAvailable])
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     SetEmail(e.target.value)
     setIsEmailAvailable(null)
+
+    emailAvailableCheck()
   }
 
-  // const handleEmailCheck = async (e: React.MouseEvent<HTMLButtonElement>) => {
-  //   e.preventDefault()
-
-  //   const emailSnap = await getDocs(dbQuery)
-  //   const emailArr = emailSnap.docs.map((doc) => doc.id)
-  //   console.log(emailArr)
-    
-  //   try {
-  //     const emailFilter = emailArr.filter((doc) => doc === email)
-  //     if (emailFilter.length === 0 && emailMatch !== null && email !== "") {
-  //       setIsEmailAvailable(true)
-  //     } else {
-  //       setIsEmailAvailable(false)
-  //     }
-  //   } catch (error:any) {
-  //       console.log(error.code)
-  //       console.log(error.message)
-  //     console.error("이메일 중복 체크 에러: ", error)
-  //   }
-  // }
   const handleEmailCheck = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
 
@@ -67,79 +76,72 @@ export default function SignUp() {
         setIsEmailAvailable(true)
       } else {
         setIsEmailAvailable(false)
+        setEmailCheckAvailable(true)
       }
-    } catch (error:any) {
-        console.log(error.code)
-        console.log(error.message)
+    } catch (error: any) {
+      setIsEmailAvailable(false)
+      console.log(error.code)
+      console.log(error.message)
       console.error("이메일 중복 체크 에러: ", error)
     }
   }
 
-  const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNickname(e.target.value)
-    setIsNicknameAvailable(null)
-  }
+  // const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const passwordRegExp = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{6,20}$/g
+  //   setPassword(e.target.value)
 
-  const handleNicknameCheck = async (
-    e: React.MouseEvent<HTMLButtonElement>
-  ) => {
-    e.preventDefault()
-    const nicknameSnap = await getDocs(dbQuery)
-    const nicknameArr = nicknameSnap.docs.map((doc) => doc.data().nickname)
-    console.log(nicknameArr)
+  //   if (e.target.value.match(passwordRegExp) === null) {
+  //     setPasswordRules(false)
+  //   } else {
+  //     setPasswordRules(true)
+  //   }
+  // }
 
-    try {
-      const nicknameFilter = nicknameArr.filter((doc) => doc === nickname)
+  // const handleConfirmPasswordChange = (
+  //   e: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   setConfirmPassword(e.target.value)
 
-      if (
-        nicknameFilter.length === 0 &&
-        nickname !== "" &&
-        nicknameMatch !== null
-      ) {
-        setIsNicknameAvailable(true)
-      } else {
-        setIsNicknameAvailable(false)
-      }
-    } catch (error) {
-      console.error("닉네임 중복 체크 에러: ", error)
-    }
-  }
+  //   if (password && e.target.value && e.target.value === password) {
+  //     setPasswordMatch(true)
+  //   } else {
+  //     setPasswordMatch(false)
+  //   }
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const passwordRegExp = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{6,20}$/g
-    setPassword(e.target.value)
+  //   if (
+  //     isEmailAvailable &&
+  //     isNicknameAvailable &&
+  //     passwordRules &&
+  //     e.target.value === password
+  //   ) {
+  //     setSubmitAvailable(false)
+  //   } else {
+  //     setSubmitAvailable(true)
+  //   }
+  // }
 
-    if (e.target.value.match(passwordRegExp) === null) {
-      setPasswordRules(false)
-    } else {
-      setPasswordRules(true)
-    }
-  }
-
-  const handleConfirmPasswordChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setConfirmPassword(e.target.value)
-    
-    if (password && e.target.value && e.target.value === password) {
-      setPasswordMatch(true)
-    } else {
-      setPasswordMatch(false)
-    }
-    
+  useEffect(() => {
     if (
       isEmailAvailable &&
       isNicknameAvailable &&
       passwordRules &&
-      e.target.value === password
+      confirmPassword === password
     ) {
       setSubmitAvailable(false)
     } else {
       setSubmitAvailable(true)
     }
-  }
+  }, [
+    isEmailAvailable,
+    isNicknameAvailable,
+    passwordRules,
+    password,
+    confirmPassword,
+  ])
+  
 
-  const handleSubmit = async (e: React.FormEvent) => {
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
     createUserWithEmailAndPassword(auth, email, password)
@@ -155,15 +157,16 @@ export default function SignUp() {
         // 파이어스토어에 저장
         await setDoc(doc(db, "Users", email), {
           email: email,
-          nickname : nickname,
+          nickname: nickname,
         })
 
+        dispatch(reset())
+        signOut(auth)
         alert("가입완료, 로그인해주세요.")
         navigate("/login")
       })
       .catch((error) => {
         const errorCode = error.code
-        // const errorMessage = error.message
         console.log(errorCode)
       })
   }
@@ -171,7 +174,7 @@ export default function SignUp() {
   return (
     <div className="flex justify-center max-w-7xl mx-auto mt-20 min-h-[calc(100vh-150px)]">
       <div className="card flex-shrink-0 h-max w-full max-w-sm shadow-xl bg-base-100">
-        <div className="card-body">
+        <div className="card-body p-2">
           <h2 className="font-bold mb-4">이메일로 회원가입</h2>
           <form onSubmit={handleSubmit}>
             <div className="form-control mb-4">
@@ -181,14 +184,15 @@ export default function SignUp() {
                   type="email"
                   id="signup-id"
                   placeholder="이메일"
-                  className="border-gray-400 border-b placeholder:text-xs"
+                  className="border-gray-400 border-b placeholder:text-xs min-w-[70%]"
                   value={email}
                   onChange={handleEmailChange}
                 />
                 <button
-                  className="bg-gray-100 rounded-2xl text-xs p-2"
+                  className="bg-amber-100 border-2 border-amber-500 rounded-2xl text-xs p-2 disabled:bg-gray-100 disabled:border-gray-200"
                   type="button"
                   onClick={handleEmailCheck}
+                  disabled={emailCheckAvailable}
                 >
                   중복체크
                 </button>
@@ -221,14 +225,15 @@ export default function SignUp() {
                   type="text"
                   id="signup-nickname"
                   placeholder="닉네임"
-                  className="border-gray-400 border-b placeholder:text-xs"
+                  className="border-gray-400 border-b placeholder:text-xs min-w-[70%]"
                   value={nickname}
                   onChange={handleNicknameChange}
                 />
                 <button
-                  className="bg-gray-100 rounded-2xl text-xs p-2"
+                  className="bg-amber-100 border-2 border-amber-500 rounded-2xl text-xs p-2 disabled:bg-gray-100 disabled:border-gray-200"
                   type="button"
                   onClick={handleNicknameCheck}
+                  disabled={nicknameCheckButton}
                 >
                   중복체크
                 </button>
@@ -301,7 +306,7 @@ export default function SignUp() {
             </div>
             <div className="form-control mt-6 ">
               <button
-                className="btn rounded-3xl bg-amber-500/80 hover:bg-amber-400 disabled:bg-gray-300"
+                className="btn rounded-3xl bg-amber-500/80 hover:bg-amber-400 disabled:bg-gray-200"
                 disabled={submitAvailable}
               >
                 회원가입

@@ -1,9 +1,9 @@
-import { useState,useEffect } from "react"
+import {  useEffect } from "react"
 import { useDispatch } from "react-redux"
-import { useNavigate } from "react-router-dom"
-import { login, reset } from "../../redux/loginSlice"
-import { app } from "../../firebaseConfig"
-import { getAuth, signOut, updateProfile } from "firebase/auth"
+import { useNavigate, Link } from "react-router-dom"
+import {  reset } from "../../redux/loginSlice"
+import { auth } from "../../firebaseConfig"
+import {  signOut} from "firebase/auth"
 import StoreData from "../../redux/StoreData"
 
 export default function ProfilePage() {
@@ -12,33 +12,30 @@ export default function ProfilePage() {
   const name = StoreData().name
   const email = StoreData().email
   const isLogin = StoreData().isLogin
-  const auth = getAuth(app)
   const user = auth.currentUser
 
   console.log(user)
-  const [modifyName, setModifyName] = useState(name)
+  // const [modifyName, setModifyName] = useState(name)
 
-  const handleChangeName = () => {
-    if(user) {
-      updateProfile(user, {
-        displayName: modifyName,
-      }).then((res) => {
-        const updatedUser = {name: modifyName}
-        dispatch(login(updatedUser))
-        alert("이름변경 완료")
-      }).catch((err) => {
-        if(err.code === "auth/user-token-expired") {
-          alert("로그인 후 다시 시도해주세요.")
-          dispatch(reset());
-          navigate("/login")
-          console.log(err.code)
-        }
-      })
-    }
-  }
-  const moveToModify = () => {
-    navigate("/profile/modify")
-  }
+  // const handleChangeName = () => {
+  //   if(user) {
+  //     updateProfile(user, {
+  //       displayName: modifyName,
+  //     }).then((res) => {
+  //       const updatedUser = {name: modifyName}
+  //       dispatch(login(updatedUser))
+  //       alert("이름변경 완료")
+  //     }).catch((err) => {
+  //       if(err.code === "auth/user-token-expired") {
+  //         alert("로그인 후 다시 시도해주세요.")
+  //         dispatch(reset());
+  //         navigate("/login")
+  //         console.log(err.code)
+  //       }
+  //     })
+  //   }
+  // }
+
 
   const handleLogout = () => {
     dispatch(reset())
@@ -76,19 +73,22 @@ export default function ProfilePage() {
             >
               회원정보 수정
             </Link> */}
-            <button
+            <Link
+              to="/profile/modify"
               className="btn bg-amber-100 hover:bg-amber-200 text-xs"
-              onClick={moveToModify}
             >
               회원정보 수정
-            </button>
-            <button className="btn bg-amber-100 hover:bg-amber-200 text-xs">
+            </Link>
+            <Link
+              to="/profile/password"
+              className="btn bg-amber-100 hover:bg-amber-200 text-xs"
+            >
               비밀번호 변경
-            </button>
+            </Link>
           </div>
           <div className="logout-container text-right">
             <button
-              className="p-2 rounded-xl bg-gray-100 hover:bg-amber-300 text-xs"
+              className="btn p-3 rounded-xl bg-amber-100 hover:bg-amber-300 text-xs"
               onClick={handleLogout}
             >
               로그아웃

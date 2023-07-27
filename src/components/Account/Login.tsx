@@ -1,8 +1,8 @@
 import { useState, useEffect} from "react"
 import { Link ,useNavigate } from "react-router-dom"
 import { auth, db } from "../../firebaseConfig"
-import { getAuth, GoogleAuthProvider, signInWithPopup ,signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "firebase/auth"
-import { doc, setDoc } from "firebase/firestore"
+import { GoogleAuthProvider, signInWithPopup ,signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "firebase/auth"
+import { doc,  setDoc } from "firebase/firestore"
 import { useDispatch} from "react-redux"
 import { login } from "../../redux/loginSlice"
 import StoreData from "../../redux/StoreData"
@@ -12,6 +12,8 @@ export default function Login () {
   const isLogin = StoreData().isLogin
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  console.log(auth.currentUser)
 
   useEffect(() => {
     isLogin ? navigate("/") : {};
@@ -80,10 +82,12 @@ export default function Login () {
           email: user.email,
           isLogin: true,
         }
-        // await setDoc(doc(db, "Users", email), {
-        //   email: user.email,
-        //   name: user.displayName,
-        // })
+        if(user.email !== null) {
+          await setDoc(doc(db, "Users", user.email), {
+            email: userInfo.email,
+            nickname: user.displayName,
+          })
+        }
         dispatch(login(userInfo))
         SetEmail("")
         setPassword("")
@@ -93,7 +97,7 @@ export default function Login () {
       const errorCode = error.code;
       const errorMessage = error.message;
 
-      const credentialError = GoogleAuthProvider.credentialFromError(error)
+      // const credentialError = GoogleAuthProvider.credentialFromError(error)
       console.log(errorCode)
       console.log(errorMessage)
     })
