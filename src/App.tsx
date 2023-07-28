@@ -10,6 +10,7 @@ import { PersistGate } from "redux-persist/integration/react"
 import MyArticle from "./components/Profile/MyArticle"
 import ProfilePage from "./components/Profile/ProfilePage"
 import ProfileModify from "./components/Profile/ProfileModify"
+import Password from "./components/Profile/Password"
 
 function App() {
   return (
@@ -21,10 +22,11 @@ function App() {
               <Route path="/login" Component={Login} />
               <Route path="/signup" Component={SignUp} />
               <Route path="/profile" Component={Profile}>
-                <Route path="/profile" Component={ProfilePage}/>
+                <Route path="/profile" Component={ProfilePage} />
                 <Route path="/profile/myarticles" Component={MyArticle} />
               </Route>
-                <Route path="/profile/modify" Component={ProfileModify}/>
+              <Route path="/profile/modify" Component={ProfileModify} />
+              <Route path="/profile/password" Component={Password} />
             </Route>
           </Routes>
         </BrowserRouter>
