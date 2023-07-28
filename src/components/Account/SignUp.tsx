@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { auth, db } from "../../firebaseConfig"
 import {
@@ -10,7 +10,7 @@ import { reset } from "../../redux/loginSlice"
 import { useDispatch } from "react-redux"
 import { signOut } from "firebase/auth"
 import { doc, setDoc } from "firebase/firestore"
-import InfoCheckHooks from "./InfoCheckHooks"
+import InfoCheckHooks from "./NameCheckHooks"
 import PasswordCheck from "./PasswordCheck"
 
 export default function SignUp() {
@@ -51,20 +51,24 @@ export default function SignUp() {
 
   const [submitAvailable, setSubmitAvailable] = useState<boolean>(true)
 
-  const emailAvailableCheck = useCallback(() => {
+  const HandleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    SetEmail(e.target.value)
+    setIsEmailAvailable(null)
+
+    if (emailMatch !== null && isEmailAvailable !== false) {
+      setEmailCheckAvailable(false)
+    } else {
+      setEmailCheckAvailable(true)
+    }
+  }
+
+  useEffect(() => {
     if (emailMatch !== null && isEmailAvailable !== false) {
       setEmailCheckAvailable(false)
     } else {
       setEmailCheckAvailable(true)
     }
   }, [emailMatch, isEmailAvailable])
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    SetEmail(e.target.value)
-    setIsEmailAvailable(null)
-
-    emailAvailableCheck()
-  }
 
   const handleEmailCheck = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
@@ -76,7 +80,7 @@ export default function SignUp() {
         setIsEmailAvailable(true)
       } else {
         setIsEmailAvailable(false)
-        setEmailCheckAvailable(true)
+        // setEmailCheckAvailable(true)
       }
     } catch (error: any) {
       setIsEmailAvailable(false)
@@ -125,7 +129,7 @@ export default function SignUp() {
       isEmailAvailable &&
       isNicknameAvailable &&
       passwordRules &&
-      confirmPassword === password
+      passwordMatch
     ) {
       setSubmitAvailable(false)
     } else {
@@ -135,11 +139,8 @@ export default function SignUp() {
     isEmailAvailable,
     isNicknameAvailable,
     passwordRules,
-    password,
-    confirmPassword,
+    passwordMatch
   ])
-  
-
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -186,7 +187,7 @@ export default function SignUp() {
                   placeholder="이메일"
                   className="border-gray-400 border-b placeholder:text-xs min-w-[70%]"
                   value={email}
-                  onChange={handleEmailChange}
+                  onChange={HandleEmailChange}
                 />
                 <button
                   className="bg-amber-100 border-2 border-amber-500 rounded-2xl text-xs p-2 disabled:bg-gray-100 disabled:border-gray-200"
@@ -281,7 +282,7 @@ export default function SignUp() {
                 </div>
               )}
             </div>
-            <div className="form-control mb-4">
+            <div className="form-control mb-10">
               <label className="label" htmlFor="signupPasswordCheck">
                 {/* <span className="label-text">비밀번호</span> */}
               </label>
@@ -306,7 +307,7 @@ export default function SignUp() {
             </div>
             <div className="form-control mt-6 ">
               <button
-                className="btn rounded-3xl bg-amber-500/80 hover:bg-amber-400 disabled:bg-gray-200"
+                className="btn rounded-3xl bg-amber-300/80 hover:bg-amber-400 disabled:bg-gray-200"
                 disabled={submitAvailable}
               >
                 회원가입

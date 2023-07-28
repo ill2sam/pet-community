@@ -2,22 +2,21 @@ import { useEffect } from "react"
 import { useDispatch } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
 import { auth, db } from "../../firebaseConfig"
-import { updateProfile} from "firebase/auth"
+import { updateProfile } from "firebase/auth"
 import { doc, updateDoc } from "firebase/firestore"
 import StoreData from "../../redux/StoreData"
 import { login } from "../../redux/loginSlice"
-import InfoCheckHooks from "../Account/InfoCheckHooks"
-
+import InfoCheckHooks from "../Account/NameCheckHooks"
 
 export default function ProfileModify() {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const name = StoreData().name
   const email = StoreData().email
   const isLogin = StoreData().isLogin
   const user = auth.currentUser
-  
+
   const {
     nickname,
     nicknameMatch,
@@ -29,7 +28,7 @@ export default function ProfileModify() {
     initialNickname: name,
     initialNicknameAvailable: null,
   })
-  
+
   // const updateUserName = () => {
   //   updateProfile(user, {
   //     displayName:
@@ -40,7 +39,7 @@ export default function ProfileModify() {
     e.preventDefault()
     const userDoc = doc(db, "Users", email)
 
-    if(user !== null) {
+    if (user !== null) {
       await updateProfile(user, {
         displayName: nickname,
       }).catch((err) => console.log(err))
@@ -49,7 +48,7 @@ export default function ProfileModify() {
         nickname: nickname,
       })
       const updateName = {
-        name: nickname
+        name: nickname,
       }
 
       dispatch(login(updateName))
@@ -58,13 +57,12 @@ export default function ProfileModify() {
     }
   }
 
-
   useEffect(() => {
     if (!isLogin) {
       navigate("/login")
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[])
+  }, [])
 
   return (
     <div className="mypage-content flex items-center flex-col max-w-5xl mx-auto mt-10 min-h-[calc(100vh-200px)]">
@@ -119,7 +117,9 @@ export default function ProfileModify() {
             <div className="button-container mb-4 flex justify-around">
               <button
                 className="btn bg-amber-100 hover:bg-amber-200 text-xs w-20 disabled:bg-gray-100 disabled:border-gray-200"
-                disabled={isNicknameAvailable === null || isNicknameAvailable ===false}
+                disabled={
+                  isNicknameAvailable === null || isNicknameAvailable === false
+                }
               >
                 수정
               </button>
