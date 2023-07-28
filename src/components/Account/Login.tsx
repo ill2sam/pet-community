@@ -13,8 +13,6 @@ export default function Login () {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  console.log(auth.currentUser)
-
   useEffect(() => {
     isLogin ? navigate("/") : {};
   })
@@ -56,11 +54,13 @@ export default function Login () {
         })
         .catch((error) => {
           const errorCode = error.code
+          const errorMessage = error.message
           if (
             errorCode === "auth/user-not-found" ||
             errorCode === "auth/wrong-password" ||
             errorCode === "auth/invalid-email"
           ) {
+            console.log(errorMessage)
             setCheckLoginForm(false)
           }
         })
@@ -153,7 +153,7 @@ export default function Login () {
                 onClick={handleGoogleLogin}
               >
                 <img
-                  src="./././public/Google_Logo.svg"
+                  src="../public/Google_Logo.svg"
                   alt="구글로 로그인"
                   className="w-5 absolute left-8"
                 />
@@ -162,7 +162,7 @@ export default function Login () {
             </div>
           </form>
           <div className="text-xs text-gray-500 mt-4">
-            <Link to="/signup">이메일로 회원가입</Link>
+            <Link to="/signup" className="hover:underline">이메일로 회원가입</Link>
           </div>
         </div>
       </div>

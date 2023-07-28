@@ -4,6 +4,7 @@ import Main from "./pages/Main"
 import Login from "./components/Account/Login"
 import SignUp from "./components/Account/SignUp"
 import Profile from "./pages/Profile"
+import Info from "./pages/Info"
 import { Provider } from "react-redux/es/exports"
 import store, { persistor } from "./redux/store"
 import { PersistGate } from "redux-persist/integration/react"
@@ -21,10 +22,12 @@ function App() {
             <Route path="/" Component={Main}>
               <Route path="/login" Component={Login} />
               <Route path="/signup" Component={SignUp} />
+              <Route path="/info" Component={Info} />
+              <Route path="/qna" Component={Info} />
               <Route path="/profile" Component={Profile}>
                 <Route path="/profile" Component={ProfilePage} />
                 <Route path="/profile/myarticles" Component={MyArticle} />
-              </Route>
+              R</Route>
               <Route path="/profile/modify" Component={ProfileModify} />
               <Route path="/profile/password" Component={Password} />
             </Route>

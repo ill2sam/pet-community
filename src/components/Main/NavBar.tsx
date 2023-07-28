@@ -12,6 +12,21 @@ export default function Navbar() {
 
   return (
     <nav className="navbar bg-base-100 max-w-5xl mx-auto">
+      {/* <summary className="m-1 btn btn-ghost md:hidden xl:mx-auto">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          className="inline-block w-5 h-5 stroke-current"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          ></path>
+        </svg>
+      </summary> */}
       <div className="dropdown">
         <label tabIndex={0} className="btn btn-ghost md:hidden xl:mx-auto">
           <svg
@@ -32,24 +47,27 @@ export default function Navbar() {
           tabIndex={0}
           className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
         >
-          <li>
-            <a>정보공유</a>
+          <li className="my-1">
+            <Link to="/info">정보공유</Link>
           </li>
-          <li>
-            <a>질문답변</a>
+          <li className="my-1">
+            <Link to="/qna">질문답변</Link>
           </li>
         </ul>
       </div>
       <div className="flex-1">
-        <Link className="btn btn-ghost normal-case text-xl" to="/">
+        <Link
+          className="btn btn-ghost normal-case text-xl px-0 hover:bg-transparent"
+          to="/"
+        >
           PetComm
         </Link>
         <ul className="menu menu-horizontal px-1 hidden md:inline-flex">
           <li>
-            <a>정보공유</a>
+            <Link to="/info">정보공유</Link>
           </li>
           <li>
-            <a>질문답변</a>
+            <Link to="/qna">질문답변</Link>
           </li>
         </ul>
       </div>
@@ -72,10 +90,10 @@ export default function Navbar() {
           )}
           <li>
             <details>
-              <summary className="bg-amber-500/80 hover:bg-amber-400">
+              <summary className="bg-amber-400/80 hover:bg-amber-200 active:bg-transparent">
                 글쓰기
               </summary>
-              <ul className="p-2 bg-base-100 z-[5]">
+              <ul className="p-2 bg-base-100 z-[5] ">
                 <li>
                   {isLogin === false && <Link to="/login">정보공유</Link>}
                   {isLogin === true && <Link to="">정보공유</Link>}

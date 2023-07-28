@@ -46,7 +46,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!isLogin) {
       alert("로그인 후 이용해주세요.")
-      navigate("/")
+      navigate("/login")
     }
     // isLogin ? {} : alert("로그인 후 이용해주세요."), navigate("/");
   })
