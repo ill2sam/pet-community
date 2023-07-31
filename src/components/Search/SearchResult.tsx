@@ -1,5 +1,5 @@
-import { useState, } from "react"
-import { useNavigate } from "react-router-dom"
+import { useState } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
 import { db } from "../../firebaseConfig"
 import { doc, increment, updateDoc } from "firebase/firestore"
 import DOMPurity from "isomorphic-dompurify"
@@ -12,19 +12,36 @@ interface CommunityProps {
 }
 
 interface PostProps {
-  id:string,
+  id: string
   bid: number
 }
 
-
-export default function CommunityContent({ posts, comments, setPosts }: CommunityProps) {
+export default function SearchResult({
+  posts,
+  comments,
+  setPosts,
+}: CommunityProps) {
   const navigate = useNavigate()
+  const location = useLocation();
+  const searchQuery = new URLSearchParams(location.search).get("q") || ""
+
+  const isSearchMatch = (postTitle: string, query:string) => {
+    const normalizedPostTitle = postTitle.toLowerCase().normalize("NFC")
+    const normalizedQuery = query.toLowerCase().normalize("NFC")
+
+    return normalizedPostTitle.includes(normalizedQuery)
+  }
+  
+  const filteredPosts = posts.filter((post) => isSearchMatch(post.title, searchQuery))
+
+  console.log(filteredPosts)
+
   const [currentPage, setCurrentPage] = useState(1)
-  const postsPerPage = 5
-  const totalPages = Math.ceil(posts.length / postsPerPage)
+  const postsPerPage = 10
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage)
   const indexOfLastPost = currentPage * postsPerPage
   const indexOfFirstPost = indexOfLastPost - postsPerPage
-  const sortedPosts = posts.sort((a, b) => b.bid - a.bid)
+  const sortedPosts = filteredPosts.sort((a, b) => b.bid - a.bid)
   const currentPosts = sortedPosts.slice(indexOfFirstPost, indexOfLastPost)
 
   const increaseViewCount = async (post: PostProps) => {
@@ -34,9 +51,9 @@ export default function CommunityContent({ posts, comments, setPosts }: Communit
       const updatedPosts = posts.map((p) =>
         p.id === post.id ? { ...p, view: p.view + 1 } : p
       )
-
+      console.log(updatedPosts)
       setPosts(updatedPosts)
-      // console.log("뷰 카운트 증가 완료")
+      console.log("뷰 카운트 증가 완료")
     } catch (error) {
       console.error("뷰 카운트 증가 실패:", error)
     }
@@ -55,6 +72,7 @@ export default function CommunityContent({ posts, comments, setPosts }: Communit
     setCurrentPage(pageNumber)
     window.scrollTo(0, 0)
   }
+  console.log(currentPosts.map((post) => post.text))
 
   const parseTextFromHTML = (htmlString: string) => {
     const parser = new DOMParser()
@@ -70,8 +88,12 @@ export default function CommunityContent({ posts, comments, setPosts }: Communit
   }
 
   return (
-    <>
-      <div className="community-content max-w-5xl mx-auto py-7 px-10 mt-10">
+    <div className="main-content max-w-5xl mx-auto py-7 px-10 mb-20">
+      <div className="text-left">
+        <h1 className="text-2xl font-bold mb-2">검색결과</h1>
+        <p>검색어: {searchQuery}</p>
+      </div>
+      <div className="border-2 rounded-lg  community-content mx-auto py-6 px-10 mt-10 mb-6">
         {currentPosts.map((post) => (
           <div className="article pb-6 border-b mb-5" key={post.id}>
             <div className="article text-left flex justify-between items-center">
@@ -95,9 +117,11 @@ export default function CommunityContent({ posts, comments, setPosts }: Communit
                   }}
                 ></p>
               </div>
-              {post.imgURL.length !== 0 && (
+              {post.imgURL !== "" && (
                 <div className="article-img w-[120px] h-[120px] rounded-lg flex justify-center overflow-hidden">
+                  {post.imgURL !== "" && (
                     <img src={post.imgURL} alt="게시글 이미지" />
+                  )}
                 </div>
               )}
             </div>
@@ -124,6 +148,6 @@ export default function CommunityContent({ posts, comments, setPosts }: Communit
           <button className="join-item btn-sm">&gt;</button>
         </div>
       )}
-    </>
+    </div>
   )
 }

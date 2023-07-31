@@ -10,12 +10,14 @@ import { reset } from "../../redux/loginSlice"
 import { useDispatch } from "react-redux"
 import { signOut } from "firebase/auth"
 import { doc, setDoc } from "firebase/firestore"
+import StoreData from "../../redux/StoreData"
 import InfoCheckHooks from "./NameCheckHooks"
 import PasswordCheck from "./PasswordCheck"
 
 export default function SignUp() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const isLogin = StoreData().isLogin;
 
   const [email, SetEmail] = useState<string>("")
   const [isEmailAvailable, setIsEmailAvailable] = useState<boolean | null>(null)
@@ -123,6 +125,11 @@ export default function SignUp() {
   //     setSubmitAvailable(true)
   //   }
   // }
+  useEffect(() => {
+    if(isLogin) {
+      navigate("/")
+    }
+  },[])
 
   useEffect(() => {
     if (

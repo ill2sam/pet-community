@@ -40,7 +40,7 @@ export default function ProfilePage() {
   const handleLogout = () => {
     dispatch(reset())
     signOut(auth)
-    navigate("/")
+    navigate(-1)
   }
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function ProfilePage() {
       navigate("/login")
     }
     // isLogin ? {} : alert("로그인 후 이용해주세요."), navigate("/");
-  })
+  },[])
 
   return (
     <div className="mypage-content flex items-center flex-col max-w-5xl mx-auto mt-10 min-h-[calc(100vh-150px)]">

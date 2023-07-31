@@ -9,16 +9,16 @@ export default function CommunityHeader() {
         <li className="mr-4">
           <Link
             className={
-              currentPath === "/info"
+              currentPath === "/community"
                 ? "font-bold py-1 border-b-2 border-amber-300"
                 : ""
             }
-            to="/info"
+            to="/community"
           >
             정보공유
           </Link>
         </li>
-        <li>
+        {/* <li>
           <Link
             className={
               currentPath === "/qna"
@@ -29,7 +29,7 @@ export default function CommunityHeader() {
           >
             QnA
           </Link>
-        </li>
+        </li> */}
       </ul>
     </div>
   )

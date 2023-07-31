@@ -59,7 +59,6 @@ export default function InfoCheckHooks({
 
     try {
       const nicknameFilter = nicknameArr.filter((doc) => doc === nickname)
-      console.log(nicknameArr)
       if (
         nicknameFilter.length === 0 &&
         nickname !== "" &&

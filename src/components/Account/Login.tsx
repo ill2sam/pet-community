@@ -49,7 +49,7 @@ export default function Login () {
             dispatch(login(userInfo))
             SetEmail("")
             setPassword("")
-            navigate("/")
+            navigate(-1)
           } 
         })
         .catch((error) => {
@@ -91,7 +91,7 @@ export default function Login () {
         dispatch(login(userInfo))
         SetEmail("")
         setPassword("")
-        navigate("/")
+        navigate(-1)
       } 
     }).catch((error) => {
       const errorCode = error.code;
